@@ -1,48 +1,56 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
-import time
 from matplotlib.widgets import Slider
 
 fig, (ax1, ax2) = plt.subplots(1, 2)
+
 xdata, ydata = [], []
+
 ln1, = ax1.plot([], [], 'ro')
 ln2, = ax2.plot([], [], 'g-')
 
-"""
-ax_slider = plt.axes((0.2, 0.03, 0.6, 0.02))
-slider = Slider(ax_slider, "Speed", 0.001, 5, valinit=1)
-"""
+ax1.set_xlim(-10, 10)
+ax1.set_ylim(-10, 10)
+ax2.set_xlim(-10, 10)
+ax2.set_ylim(-10, 10)
+
+# --- SLIDERY ---
+
+# time step slider
+ax_slider_time = plt.axes((0.2, 0.05, 0.6, 0.02))
+slider_time = Slider(ax_slider_time, "Time step [ms]", 1, 1000, valinit=800)
+
+# r scale slider
+ax_slider_r = plt.axes((0.2, 0.01, 0.6, 0.02))
+slider_r = Slider(ax_slider_r, "r scale", 0.01, 5.0, valinit=1.0)
+
 def init():
-    ax1.set_xlim(-10, 10)
-    ax1.set_ylim(-10, 10)
-    ax2.set_xlim(-10, 10)
-    ax2.set_ylim(-10, 10)
     return ln1, ln2
 
 def update(frame):
-    if frame != 0:
-        r = np.random.randn()
-        alpha = np.random.uniform(-2*np.pi, 2*np.pi)
-        xdata.append(r * np.cos(alpha))
-        ydata.append(r * np.sin(alpha))
-        """
-        xdata.append(xdata[frame -1] + np.random.uniform(-0.5, 0.5))
-        ydata.append(ydata[frame -1] + np.random.uniform(-0.5, 0.5))
-        """
+    r = slider_r.val * np.random.randn()
+    alpha = np.random.uniform(-2*np.pi, 2*np.pi)
+
+    xdata.append(r * np.cos(alpha))
+    ydata.append(r * np.sin(alpha))
+
     ln1.set_data(xdata, ydata)
     ln2.set_data(xdata, ydata)
-    time.sleep(0.5)
     return ln1, ln2
 
+ani = FuncAnimation(
+    fig,
+    update,
+    frames=1000,
+    init_func=init,
+    interval=slider_time.val,
+    blit=False
+)
 
-xdata.append(int(input("Podaj x0: ")))
-ydata.append(int(input("Podaj y0: ")))
+def on_time_change(val):
+    ani.event_source.interval = val
 
-
-ani1 = FuncAnimation(fig, update, frames=100,
-                    init_func=init, blit=True)
-
-#slider.on_changed(update)
+slider_time.on_changed(on_time_change)
 
 plt.show()
